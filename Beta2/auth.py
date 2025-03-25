@@ -63,3 +63,34 @@ class ManageAuth:
                     file.write(userData)
         except Exception as e:
             print(f"Error saving user data: {e}")
+
+    def register(self, username, email, password):
+        if not User.validEmail(email):
+            return False, "Invalid email format!"
+        valid, message = User.validPassword(password)
+        if not valid:
+            return False, message
+        if email in self.users:
+            return False, "Email already registered!"
+        if username in [user.username for user in self.users.values()]:
+            return False, "Username already exists!"
+        
+        passwordHash = User.hashPassword(password)
+        self.users[email] = User(username, email, passwordHash)
+        self.saveUsers()
+        return True, "Account created successfully"
+    
+    def login(self, email, password):
+        print(f"Attempting login with email: {email}")
+        print(f"Registered emails: {list(self.users.keys())}")
+
+        if email not in self.users:
+            return False, "Email not found!"
+        
+        storeHash = self.users[email].password.encode('utf-8')
+        print(f"Stored password hash: {storeHash}")
+
+        if bcrypt.checkpw(password.encode('utf-8'), storeHash):
+            return True, "Login successful"
+        else:
+            return False, "Incorrect password!"
