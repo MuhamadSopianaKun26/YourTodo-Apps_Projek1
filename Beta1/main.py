@@ -10,36 +10,18 @@ from PyQt5.QtWidgets import (
     QStackedWidget,
 )
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtGui import QFont
 import sys
 
 from create import TodoCreator
 from ui_components import HeaderWidget, SidebarWidget, TaskItemWidget
 
-from upcoming import UpcomingWidget
-from AddTask import AddTaskWidget
 
 class ToDoApp(QWidget):
     def __init__(self):
         super().__init__()
-
-        self.action_button_style = """
-            QPushButton {
-                background-color: #00B4D8;
-                color: white;
-                border: none;
-                border-radius: 15px;
-                padding: 8px 20px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background-color: #0096B7;
-            }
-        """
-
         self.initUI()
         self.loadTasks()
-
 
     def initUI(self):
         """Initialize the main user interface"""
@@ -83,34 +65,31 @@ class ToDoApp(QWidget):
         """Set up all section widgets in the stacked widget"""
         # Create widgets for each section
         self.today_widget = QWidget()
-        self.upcoming_widget = UpcomingWidget()
-        self.scheduled_widget = QWidget()
-        self.history_widget = QWidget() 
+        self.weekly_widget = QWidget()
+        self.monthly_widget = QWidget()
+        self.history_widget = QWidget()
 
         # Set up each widget's content
         self.setupTodayWidget()
-        self.setupSimpleWidget(self.scheduled_widget, "Scheduled")
-        self.setupSimpleWidget(self.scheduled_widget, "history")
-
+        self.setupSimpleWidget(self.weekly_widget, "Weekly Task")
+        self.setupSimpleWidget(self.monthly_widget, "Monthly Task")
+        self.setupSimpleWidget(self.history_widget, "History")
 
         # Add all widgets to the stacked widget
         for widget in [
             self.today_widget,
-            self.upcoming_widget,
-            self.scheduled_widget,
+            self.weekly_widget,
+            self.monthly_widget,
             self.history_widget,
         ]:
             self.stacked_widget.addWidget(widget)
-        
-        self.loadTasks()
-
 
     def _connectSidebarButtons(self):
         """Connect sidebar buttons to their respective sections"""
         button_sections = {
             self.sidebar.today_btn: "today",
-            self.sidebar.upcoming_btn: "upcoming",
-            self.sidebar.scheduled_btn: "scheduled",
+            self.sidebar.weekly_btn: "weekly",
+            self.sidebar.monthly_btn: "monthly",
             self.sidebar.history_btn: "history",
         }
 
@@ -161,24 +140,23 @@ class ToDoApp(QWidget):
 
         # Add task button
         add_btn = QPushButton("Add")
-        add_btn.setIcon(QIcon("icons/add.png"))
-        add_btn.setStyleSheet(self.action_button_style)
+        add_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #00B4D8;
+                color: white;
+                border: none;
+                border-radius: 15px;
+                padding: 8px 20px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #0096B7;
+            }
+        """
+        )
         add_btn.clicked.connect(self.addTask)
         header.addWidget(add_btn)
-
-        # Clear all button
-        clear_btn = QPushButton("Clear All")
-        clear_btn.setIcon(QIcon("icons/clear.png"))
-        clear_btn.clicked.connect(self.clearAllTasks)
-        clear_btn.setStyleSheet(self.action_button_style)
-        header.addWidget(clear_btn)
-
-        # Refresh button
-        refresh_btn = QPushButton("Refresh")
-        refresh_btn.setIcon(QIcon("icons/refresh.png"))
-        refresh_btn.clicked.connect(self.loadTasks)
-        refresh_btn.setStyleSheet(self.action_button_style)
-        header.addWidget(refresh_btn)
 
         return header
 
@@ -238,8 +216,7 @@ class ToDoApp(QWidget):
 
     def addTask(self):
         """Open dialog to add a new task"""
-        self.add_task_dialog = AddTaskWidget(self)
-        # TodoCreator.add_task(self, self.saveNewTask)
+        TodoCreator.add_task(self, self.saveNewTask)
 
     def saveNewTask(self, task_data):
         """Save new task to file and update UI"""
@@ -267,8 +244,8 @@ class ToDoApp(QWidget):
         """Switch to the specified section in the stacked widget"""
         section_widgets = {
             "today": self.today_widget,
-            "upcoming": self.upcoming_widget,
-            "scheduled": self.scheduled_widget,
+            "weekly": self.weekly_widget,
+            "monthly": self.monthly_widget,
             "history": self.history_widget,
         }
         if section in section_widgets:
@@ -303,28 +280,6 @@ class ToDoApp(QWidget):
     def updateTaskCount(self):
         """Update the task count display"""
         self.task_count_label.setText(str(self.task_list_layout.count()))
-
-    def clearAllTasks(self):
-        """Clear all tasks from the today section"""
-        reply = QMessageBox.question(
-            self,
-            "Clear All Tasks",
-            "Are you sure you want to clear all tasks?",
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No,
-        )
-        if reply == QMessageBox.Yes:
-            # Clear all widgets from the layout
-            if self.task_list_layout:
-                while self.task_list_layout.count():
-                    item = self.task_list_layout.takeAt(0)
-                    if item.widget():
-                        item.widget().deleteLater()
-
-                # Save the empty state
-                self.saveTasks()
-                self.updateTaskCount()
-
 
 
 if __name__ == "__main__":

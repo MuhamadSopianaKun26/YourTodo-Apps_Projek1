@@ -124,8 +124,7 @@ class SidebarButton(QPushButton):
                 text-align: left;
                 padding: 12px 20px;
                 border: none;
-                border-top-right-radius: 8px;
-                border-bottom-right-radius: 8px;
+                border-radius: 8px;
                 margin: 4px 12px;
                 color: #333;
                 font-size: 15px;
@@ -140,7 +139,6 @@ class SidebarButton(QPushButton):
                 background-color: rgba(0, 180, 216, 0.15);
                 color: #00B4D8;
                 font-weight: 600;
-                border-left : 5px solid rgb(30 , 90, 150);
             }
             QPushButton:checked:hover {
                 background-color: rgba(0, 180, 216, 0.2);
@@ -165,8 +163,8 @@ class SidebarWidget(QWidget):
 
         # Create navigation buttons
         self.today_btn = SidebarButton("Today Task", "icons/today.png")
-        self.upcoming_btn = SidebarButton("Upcoming", "icons/weekly.png")
-        self.scheduled_btn = SidebarButton("Scheduled", "icons/monthly.png")
+        self.weekly_btn = SidebarButton("Weekly Task", "icons/weekly.png")
+        self.monthly_btn = SidebarButton("Monthly Task", "icons/monthly.png")
         self.history_btn = SidebarButton("History", "icons/history.png")
 
         # Set default selected button
@@ -175,8 +173,8 @@ class SidebarWidget(QWidget):
         # Add buttons to layout
         for btn in [
             self.today_btn,
-            self.upcoming_btn,
-            self.scheduled_btn,
+            self.weekly_btn,
+            self.monthly_btn,
             self.history_btn,
         ]:
             layout.addWidget(btn)
