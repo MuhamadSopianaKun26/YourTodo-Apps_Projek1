@@ -4,8 +4,11 @@ from create import TaskDialog
 
 
 class TodoUpdater:
+    """Static class for handling task update operations"""
+
     @staticmethod
     def update_task_table_item(table_widget, row, task_data):
+        """Update a single row in the task table with new data"""
         for col, key in enumerate(
             ["name", "description", "start_time", "deadline", "priority", "status"]
         ):
@@ -14,6 +17,7 @@ class TodoUpdater:
 
     @staticmethod
     def update_task(table_widget, save_callback):
+        """Open dialog to edit selected task"""
         from read import TodoReader
 
         selected = table_widget.currentRow()
@@ -27,6 +31,7 @@ class TodoUpdater:
 
     @staticmethod
     def mark_task_as_done(table_widget, save_callback):
+        """Mark selected task as completed"""
         from read import TodoReader
 
         selected = table_widget.currentRow()
@@ -39,6 +44,7 @@ class TodoUpdater:
 
     @staticmethod
     def mark_task_as_failed(table_widget, row, save_callback):
+        """Mark specified task as failed"""
         from read import TodoReader
 
         selected = row if row is not None else table_widget.currentRow()
@@ -50,6 +56,7 @@ class TodoUpdater:
 
     @staticmethod
     def move_task_to_history(table_widget, save_callback):
+        """Move completed or failed task to history"""
         from read import TodoReader
 
         selected = table_widget.currentRow()

@@ -1,14 +1,14 @@
 from PyQt5.QtWidgets import (
     QTableWidgetItem,
-    QLabel,
     QProgressDialog,
     QMessageBox,
 )
 from PyQt5.QtCore import Qt, QTimer, QDate, QTime
-from PyQt5.QtGui import QMovie
 
 
 class LoadingManager:
+    """Manages loading animation and progress display"""
+
     def __init__(self, parent_widget):
         self.parent = parent_widget
         self.loading_label = parent_widget.loadingLabel
@@ -16,19 +16,24 @@ class LoadingManager:
         self.table = parent_widget.taskTable
 
     def start_loading(self):
+        """Show loading animation and hide table"""
         self.loading_label.show()
         self.loading_movie.start()
         self.table.hide()
 
     def stop_loading(self):
+        """Hide loading animation and show table"""
         self.loading_label.hide()
         self.loading_movie.stop()
         self.table.show()
 
 
 class TodoReader:
+    """Static class for handling task reading operations"""
+
     @staticmethod
     def load_tasks_to_table(table_widget, file_path, show_loading=True):
+        """Load tasks from file to table with optional loading animation"""
         if show_loading:
             # Create loading manager
             loading_manager = LoadingManager(table_widget.parent())
@@ -64,6 +69,7 @@ class TodoReader:
 
     @staticmethod
     def _load_tasks_data(table_widget, file_path):
+        """Load task data from file into table widget"""
         try:
             table_widget.setRowCount(0)  # Clear existing rows first
             with open(file_path, "r", encoding="utf-8") as file:
@@ -87,6 +93,7 @@ class TodoReader:
 
     @staticmethod
     def get_selected_task_data(table_widget):
+        """Get data of the currently selected task"""
         selected = table_widget.currentRow()
         if selected >= 0:
             return {
@@ -101,6 +108,7 @@ class TodoReader:
 
     @staticmethod
     def check_past_deadline_tasks(table_widget, mark_failed_callback):
+        """Check and mark tasks that are past their deadline"""
         for row in range(table_widget.rowCount()):
             deadline_str = table_widget.item(
                 row, 3

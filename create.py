@@ -11,13 +11,14 @@ from PyQt5.QtWidgets import (
     QTimeEdit,
     QMessageBox,
     QDialogButtonBox,
-    QTableWidgetItem,
 )
 from PyQt5.QtCore import QTime, QDate, Qt
 from PyQt5.QtGui import QFont, QPixmap
 
 
 class BaseDialog(QDialog):
+    """Base dialog class with common initialization"""
+
     def __init__(self, parent=None, title=""):
         super().__init__(parent)
         self.setWindowTitle(title)
@@ -26,6 +27,8 @@ class BaseDialog(QDialog):
 
 
 class ImageDialog(BaseDialog):
+    """Dialog displaying an image with a message"""
+
     def __init__(self, parent=None):
         super().__init__(parent, "Bayar Dulu Bos!!")
         self._setup_ui()
@@ -53,33 +56,24 @@ class ImageDialog(BaseDialog):
 
 
 class TaskDialog(BaseDialog):
+    """Dialog for creating or editing a task"""
+
     def __init__(self, parent=None, task_data=None):
         super().__init__(parent, "Task Details")
         self.task_data = task_data or {}
         self._setup_ui()
 
     def _setup_ui(self):
-        # Task name
+        """Set up the task dialog UI components"""
         self._add_task_name()
-
-        # Task description
         self._add_task_description()
-
-        # Start time
         self._add_start_time()
-
-        # Deadline
         self._add_deadline()
-
-        # Priority
         self._add_priority()
-
-        # Save button
-        self.saveButton = QPushButton("Save", self)
-        self.saveButton.clicked.connect(self.validateAndAccept)
-        self.layout.addWidget(self.saveButton)
+        self._add_save_button()
 
     def _add_task_name(self):
+        """Add task name input field"""
         self.taskName = QLineEdit(self)
         self.taskName.setPlaceholderText("Task Name")
         if "name" in self.task_data:
@@ -88,6 +82,7 @@ class TaskDialog(BaseDialog):
         self.layout.addWidget(self.taskName)
 
     def _add_task_description(self):
+        """Add task description input field"""
         self.taskDescription = QTextEdit(self)
         self.taskDescription.setPlaceholderText("Task Description")
         if "description" in self.task_data:
@@ -96,6 +91,7 @@ class TaskDialog(BaseDialog):
         self.layout.addWidget(self.taskDescription)
 
     def _add_start_time(self):
+        """Add start date and time input fields"""
         self.layout.addWidget(QLabel("Starting Date:"))
         self.startCalendar = QCalendarWidget(self)
         if "start_time" in self.task_data:
@@ -113,6 +109,7 @@ class TaskDialog(BaseDialog):
         self.layout.addWidget(self.startTime)
 
     def _add_deadline(self):
+        """Add deadline date and time input fields"""
         self.layout.addWidget(QLabel("Deadline Date:"))
         self.calendar = QCalendarWidget(self)
         if "deadline" in self.task_data:
@@ -128,6 +125,7 @@ class TaskDialog(BaseDialog):
         self.layout.addWidget(self.deadlineTime)
 
     def _add_priority(self):
+        """Add priority selection radio buttons"""
         priorityLayout = QHBoxLayout()
         self.priorityLow = QRadioButton("Low")
         self.priorityMedium = QRadioButton("Medium")
@@ -139,14 +137,22 @@ class TaskDialog(BaseDialog):
         self.layout.addLayout(priorityLayout)
 
         if "priority" in self.task_data:
-            if self.task_data["priority"] == "Low":
-                self.priorityLow.setChecked(True)
-            elif self.task_data["priority"] == "Medium":
-                self.priorityMedium.setChecked(True)
-            elif self.task_data["priority"] == "High":
-                self.priorityHigh.setChecked(True)
+            priority_map = {
+                "Low": self.priorityLow,
+                "Medium": self.priorityMedium,
+                "High": self.priorityHigh,
+            }
+            if self.task_data["priority"] in priority_map:
+                priority_map[self.task_data["priority"]].setChecked(True)
+
+    def _add_save_button(self):
+        """Add save button with validation"""
+        self.saveButton = QPushButton("Save", self)
+        self.saveButton.clicked.connect(self.validateAndAccept)
+        self.layout.addWidget(self.saveButton)
 
     def validateAndAccept(self):
+        """Validate form inputs before accepting"""
         start_date = self.startCalendar.selectedDate()
         start_time = self.startTime.time()
         deadline_date = self.calendar.selectedDate()
@@ -162,12 +168,13 @@ class TaskDialog(BaseDialog):
         self.accept()
 
     def _validate_fields(self, start_date, deadline_date):
-        if (
-            not self.taskName.text().strip()
-            or not self.taskDescription.toPlainText().strip()
-            or not start_date.isValid()
-            or not deadline_date.isValid()
-            or not (
+        """Validate that all required fields are filled"""
+        if not (
+            self.taskName.text().strip()
+            and self.taskDescription.toPlainText().strip()
+            and start_date.isValid()
+            and deadline_date.isValid()
+            and (
                 self.priorityLow.isChecked()
                 or self.priorityMedium.isChecked()
                 or self.priorityHigh.isChecked()
@@ -178,6 +185,7 @@ class TaskDialog(BaseDialog):
         return True
 
     def _validate_dates(self, start_date, start_time, deadline_date, deadline_time):
+        """Validate that dates are logically correct"""
         if start_date == deadline_date and start_time == deadline_time:
             QMessageBox.warning(
                 self,
@@ -195,6 +203,7 @@ class TaskDialog(BaseDialog):
         return True
 
     def getTaskData(self):
+        """Get the task data from the form"""
         priority = (
             "Low"
             if self.priorityLow.isChecked()
@@ -211,27 +220,16 @@ class TaskDialog(BaseDialog):
 
 
 class TodoCreator:
+    """Static class for handling task creation"""
+
     @staticmethod
-    def add_task(table_widget, save_callback):
+    def add_task(parent_widget, save_callback):
+        """Show image dialog and then task dialog for creating a new task"""
         # Show image dialog first
-        imageDialog = ImageDialog(table_widget.parent())
-        if imageDialog.exec_():  # If user clicks OK
+        imageDialog = ImageDialog(parent_widget)
+        if imageDialog.exec_():
             # Continue to task input dialog
-            dialog = TaskDialog(table_widget.parent())
+            dialog = TaskDialog(parent_widget)
             if dialog.exec_():
                 task_data = dialog.getTaskData()
-                row = table_widget.rowCount()
-                table_widget.insertRow(row)
-                for col, key in enumerate(
-                    [
-                        "name",
-                        "description",
-                        "start_time",
-                        "deadline",
-                        "priority",
-                        "status",
-                    ]
-                ):
-                    item = QTableWidgetItem(task_data[key])
-                    table_widget.setItem(row, col, item)
-                save_callback()
+                save_callback(task_data)
