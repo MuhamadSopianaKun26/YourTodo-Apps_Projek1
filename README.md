@@ -6,4 +6,4 @@ anggota :
 - muhamad Sopiana Arginsah (241524016)
 - Fauzan Juniar Mulyana (241524011) 
 - rizqi
-- praditama
+- Praditama Ajmal Hasan (241524023)
